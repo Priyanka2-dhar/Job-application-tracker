@@ -9,7 +9,7 @@ public class Main {
         int nextId = 1;
 
         while (true) {
-            System.out.println("\n1. Add application\n2. View all\n3. Update status\n4. Delete application\n0. Exit");
+            System.out.println("\n1. Add application\n2. View all\n3. Update status\n4. Delete application\n5. Follow up today\n0. Exit");
             System.out.print("Choose: ");
             int choice = Integer.parseInt(sc.nextLine());
 
@@ -46,6 +46,20 @@ public class Main {
                 int id = Integer.parseInt(sc.nextLine());
                 boolean removed = list.removeIf(a -> a.getId() == id);
                 System.out.println(removed ? "Deleted!" : "ID not found.");
+
+            } else if (choice == 5) {
+                LocalDate today = LocalDate.now();
+                boolean any = false;
+                for (JobApplication a : list) {
+                    boolean isOpen = a.getStatus().equalsIgnoreCase("Applied")
+                            || a.getStatus().equalsIgnoreCase("Interview");
+                    boolean isDue = !a.getFollowUpDate().isAfter(today);
+                    if (isOpen && isDue) {
+                        System.out.println(a);
+                        any = true;
+                    }
+                }
+                if (!any) System.out.println("Nothing to follow up today!");
 
             } else if (choice == 0) {
                 break;
