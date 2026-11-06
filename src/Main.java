@@ -35,6 +35,41 @@ public class Main {
         return list;
     }
 
+    // Keeps asking until the user types a valid number
+    static int readInt(Scanner sc, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                return Integer.parseInt(sc.nextLine().trim());
+            } catch (NumberFormatException e) {
+                System.out.println("Please enter a valid number.");
+            }
+        }
+    }
+
+    // Keeps asking until the user types something (and removes "|" so the file format stays safe)
+    static String readNonEmpty(Scanner sc, String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String text = sc.nextLine().trim().replace("|", "-");
+            if (!text.isEmpty()) return text;
+            System.out.println("This cannot be empty.");
+        }
+    }
+
+    // Only accepts one of the four allowed statuses
+    static String readStatus(Scanner sc) {
+        String[] valid = {"Applied", "Interview", "Rejected", "Offer"};
+        while (true) {
+            System.out.print("New status (Applied/Interview/Rejected/Offer): ");
+            String input = sc.nextLine().trim();
+            for (String s : valid) {
+                if (s.equalsIgnoreCase(input)) return s;
+            }
+            System.out.println("Invalid status. Please choose one of the four options.");
+        }
+    }
+
     public static void main(String[] args) {
         ArrayList<JobApplication> list = loadFromFile();
         Scanner sc = new Scanner(System.in);
@@ -45,14 +80,11 @@ public class Main {
 
         while (true) {
             System.out.println("\n1. Add application\n2. View all\n3. Update status\n4. Delete application\n5. Follow up today\n0. Exit");
-            System.out.print("Choose: ");
-            int choice = Integer.parseInt(sc.nextLine());
+            int choice = readInt(sc, "Choose: ");
 
             if (choice == 1) {
-                System.out.print("Company: ");
-                String company = sc.nextLine();
-                System.out.print("Role: ");
-                String role = sc.nextLine();
+                String company = readNonEmpty(sc, "Company: ");
+                String role = readNonEmpty(sc, "Role: ");
                 list.add(new JobApplication(nextId++, company, role,
                         LocalDate.now(), "Applied", LocalDate.now().plusDays(7)));
                 saveToFile(list);
@@ -63,13 +95,11 @@ public class Main {
                 for (JobApplication a : list) System.out.println(a);
 
             } else if (choice == 3) {
-                System.out.print("Enter application ID: ");
-                int id = Integer.parseInt(sc.nextLine());
+                int id = readInt(sc, "Enter application ID: ");
                 boolean found = false;
                 for (JobApplication a : list) {
                     if (a.getId() == id) {
-                        System.out.print("New status (Applied/Interview/Rejected/Offer): ");
-                        a.setStatus(sc.nextLine());
+                        a.setStatus(readStatus(sc));
                         saveToFile(list);
                         System.out.println("Status updated!");
                         found = true;
@@ -79,8 +109,7 @@ public class Main {
                 if (!found) System.out.println("ID not found.");
 
             } else if (choice == 4) {
-                System.out.print("Enter application ID to delete: ");
-                int id = Integer.parseInt(sc.nextLine());
+                int id = readInt(sc, "Enter application ID to delete: ");
                 boolean removed = list.removeIf(a -> a.getId() == id);
                 if (removed) saveToFile(list);
                 System.out.println(removed ? "Deleted!" : "ID not found.");
@@ -101,6 +130,8 @@ public class Main {
 
             } else if (choice == 0) {
                 break;
+            } else {
+                System.out.println("Please choose a number from the menu.");
             }
         }
     }
